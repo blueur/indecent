@@ -1,33 +1,47 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'dice_widget.dart';
 
 class RollWidget extends StatefulWidget {
+  final int diceCount;
+  final int diceValue;
   final List<int> diceFaces;
 
   RollWidget({
     Key key,
+    @required this.diceCount,
+    @required this.diceValue,
     @required this.diceFaces,
   }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
     debugPrint(diceFaces.map((dice) => dice.toString()).join('+'));
-    return _RollState(diceFaces);
+    return _RollState(
+      diceCount,
+      diceValue,
+      diceFaces,
+    );
   }
 }
 
 class _RollState extends State<RollWidget> {
   static Random _random = Random();
+  final int diceCount;
+  final int diceValue;
   final List<int> diceFaces;
   List<Stream<int>> _diceValues;
   Stream<int> _resultValues;
 
-  _RollState(this.diceFaces)
-      : this._diceValues = List.filled(diceFaces.length, Stream.empty()),
+  _RollState(
+    this.diceCount,
+    this.diceValue,
+    this.diceFaces,
+  )   : this._diceValues = List.filled(diceFaces.length, Stream.empty()),
         this._resultValues = Stream.empty();
 
   static Stream<int> _getValues(int value, int maxCount, int maxDelay) async* {
@@ -59,55 +73,123 @@ class _RollState extends State<RollWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Scrollbar(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Center(
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    children: _diceValues
-                        .map((stream) => StreamBuilder<int>(
-                              stream: stream,
-                              builder: (context, snapshot) => DiceWidget(
-                                snapshot: snapshot,
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_downward,
-                  size: 64.0,
-                ),
-                StreamBuilder<int>(
-                  stream: _resultValues,
-                  builder: (context, snapshot) => Text(
-                    snapshot.hasData ? snapshot.data.toString() : '?',
-                    style: TextStyle(
-                      color: snapshot.connectionState == ConnectionState.done
-                          ? Colors.black
-                          : Colors.grey,
-                      fontSize: 64.0,
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: Scrollbar(
+                  child: SingleChildScrollView(
+                    child: Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        children: _diceValues
+                            .map((stream) => StreamBuilder<int>(
+                                  stream: stream,
+                                  builder: (context, snapshot) => DiceWidget(
+                                    snapshot: snapshot,
+                                  ),
+                                ))
+                            .toList(),
+                      ),
                     ),
                   ),
                 ),
-                IconButton(
-                  iconSize: 64.0,
-                  icon: Icon(Icons.refresh),
-                  onPressed: () {
-                    setState(() {
-                      _resetStreams();
-                    });
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
+            Icon(
+              Icons.arrow_downward,
+              size: 64.0,
+            ),
+            StreamBuilder<int>(
+              stream: _resultValues,
+              builder: (context, snapshot) => Text(
+                snapshot.hasData ? snapshot.data.toString() : '?',
+                style: TextStyle(
+                  color: snapshot.connectionState == ConnectionState.done
+                      ? Colors.black
+                      : Colors.grey,
+                  fontSize: 64.0,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            FloatingActionButton(
+              onPressed: () => edit(context),
+              child: const Icon(Icons.edit),
+            ),
+            FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  _resetStreams();
+                });
+              },
+              child: const Icon(Icons.refresh),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  Future<String> edit(BuildContext context) async {
+    final TextEditingController countController = TextEditingController(
+      text: this.diceCount.toString(),
+    );
+    final TextEditingController valueController = TextEditingController(
+      text: this.diceValue.toString(),
+    );
+    return await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: countController,
+                decoration: const InputDecoration(
+                  labelText: 'Number of dices',
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                ],
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: valueController,
+                decoration: const InputDecoration(
+                  labelText: 'Dice value',
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                ],
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Roll'),
+              onPressed: () {
+                final String count = countController.value.text;
+                final String value = valueController.value.text;
+                if (count.isNotEmpty && value.isNotEmpty) {
+                  final String path = '/roll/${count}d${value}';
+                  Navigator.pushNamed(context, path);
+                }
+              },
+            )
+          ],
+        );
+      },
     );
   }
 }

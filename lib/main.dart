@@ -11,6 +11,8 @@ void main() {
         final int diceCount = int.parse(match.group(1));
         final int diceValue = int.parse(match.group(2));
         return RollWidget(
+          diceCount: diceCount,
+          diceValue: diceValue,
           diceFaces: List.filled(diceCount, diceValue),
         );
       },
@@ -38,6 +40,8 @@ void main() {
         return MaterialPageRoute(
           settings: settings.copyWith(name: rollPath + '/1d100'),
           builder: (context) => RollWidget(
+            diceCount: 1,
+            diceValue: 100,
             diceFaces: [100],
           ),
         );
