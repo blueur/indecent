@@ -96,9 +96,9 @@ class _RollState extends State<RollWidget> {
                 ),
               ),
             ),
-            Icon(
-              Icons.arrow_downward,
-              size: 64.0,
+            const Text(
+              '=',
+              style: TextStyle(fontSize: 64),
             ),
             StreamBuilder<int>(
               stream: _resultValues,
@@ -108,7 +108,7 @@ class _RollState extends State<RollWidget> {
                   color: snapshot.connectionState == ConnectionState.done
                       ? Colors.black
                       : Colors.grey,
-                  fontSize: 64.0,
+                  fontSize: 64,
                 ),
               ),
             ),
@@ -116,9 +116,9 @@ class _RollState extends State<RollWidget> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(12),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             FloatingActionButton(
               onPressed: () => edit(context),
@@ -177,7 +177,7 @@ class _RollState extends State<RollWidget> {
           ),
           actions: [
             TextButton(
-              child: const Text('Roll'),
+              child: const Icon(Icons.done),
               onPressed: () {
                 final String count = countController.value.text;
                 final String value = valueController.value.text;
