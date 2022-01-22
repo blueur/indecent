@@ -8,8 +8,8 @@ void main() {
     _Route(
       regExp: new RegExp(rollPath + r'/([1-9]\d*)d([1-9]\d*)$'),
       onMatch: (match) {
-        final int diceCount = int.parse(match.group(1));
-        final int diceValue = int.parse(match.group(2));
+        final int diceCount = int.parse(match.group(1)!);
+        final int diceValue = int.parse(match.group(2)!);
         return RollWidget(
           diceCount: diceCount,
           diceValue: diceValue,
@@ -26,7 +26,7 @@ void main() {
       visualDensity: VisualDensity.adaptivePlatformDensity,
     ),
     onGenerateRoute: (settings) {
-      final Widget widget =
+      final Widget? widget =
           routes.map((route) => route.test(settings)).firstWhere(
                 (widget) => widget != null,
                 orElse: () => null,
@@ -54,10 +54,14 @@ class _Route {
   final RegExp regExp;
   final Widget Function(RegExpMatch match) onMatch;
 
-  _Route({this.regExp, this.onMatch});
+  _Route({required this.regExp, required this.onMatch});
 
-  Widget test(RouteSettings settings) {
-    final match = regExp.firstMatch(settings.name);
+  Widget? test(RouteSettings settings) {
+    final String? name = settings.name;
+    if (name == null) {
+      return null;
+    }
+    final match = regExp.firstMatch(name);
     if (match != null) {
       return onMatch(match);
     } else {

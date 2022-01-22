@@ -5,8 +5,8 @@ class DiceWidget extends StatelessWidget {
   final AsyncSnapshot<int> snapshot;
 
   const DiceWidget({
-    Key key,
-    @required this.snapshot,
+    Key? key,
+    required this.snapshot,
   }) : super(key: key);
 
   @override

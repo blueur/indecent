@@ -12,10 +12,10 @@ class RollWidget extends StatefulWidget {
   final List<int> diceFaces;
 
   RollWidget({
-    Key key,
-    @required this.diceCount,
-    @required this.diceValue,
-    @required this.diceFaces,
+    Key? key,
+    required this.diceCount,
+    required this.diceValue,
+    required this.diceFaces,
   }) : super(key: key);
 
   @override
@@ -139,7 +139,7 @@ class _RollState extends State<RollWidget> {
     );
   }
 
-  Future<String> edit(BuildContext context) async {
+  Future<String?> edit(BuildContext context) async {
     final TextEditingController countController = TextEditingController(
       text: this.diceCount.toString(),
     );
